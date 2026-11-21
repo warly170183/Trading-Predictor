@@ -160,6 +160,9 @@ def main():
         preds[rec["id"]] = rec
         save_preds(preds)
         print("guardada", rec["id"], "spot", rec["spot"], "flags", rec["flags"])
+    if cmd == "run" and os.path.isdir(os.path.join(DATA, "micro")):
+        from micro_rollup import rollup
+        print("microestructura:", rollup())
     rows = score(preds)
     report(preds, rows)
     print("predicciones", len(preds), "puntuadas", len(rows))

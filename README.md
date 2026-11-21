@@ -23,6 +23,17 @@ python src/journal.py score             # solo puntúa y regenera journal/REPORT
 Los datos se guardan en `data/` (no versionado; cambia la ruta con `TP_DATA`). El diario va en `journal/` y sí se versiona.
 `.github/workflows/daily-journal.yml` ejecuta el diario cada día a las 00:20 UTC y sube el resultado al repo. Si OKX o Deribit bloquean las IP de GitHub Actions, el workflow fallará y habrá que ejecutarlo en otra máquina.
 
+## Microestructura (datos para el intradía)
+
+`src/micro_collect.py` guarda una fila por minuto de OKX (públicos, sin clave): spread, desequilibrio del libro (5 y 20 niveles), profundidad a 5 pb, microprecio, flujo agresivo comprador y vendedor, liquidaciones largas y cortas, base mark/índice, funding y open interest. No hay historia pública de esto, así que hay que acumularla.
+
+```bash
+python src/micro_collect.py                      # sin fin; prueba corta: --duration 120 --interval 20
+python src/micro_rollup.py                       # CSV comprimidos en journal/micro/ para versionar
+```
+
+Tiene que correr en una máquina siempre encendida: `deploy/micro-collector.service` es un servicio systemd listo para copiar. GitHub Actions no sirve para esto. `journal.py run` llama al rollup si existe `data/micro/`. Con la columna `missed` a 1 se sabe qué minutos perdieron operaciones (lote de 500 trades superado). Hacen falta unos 2 a 3 meses de datos antes de poder contrastar señales de 5 a 60 minutos.
+
 ## Código (`src/`)
 
 | Archivo | Qué hace |
@@ -33,6 +44,7 @@ Los datos se guardan en `data/` (no versionado; cambia la ruta con `TP_DATA`). E
 | `signals.py` | Validación direccional con precio y volumen (`btc`, `eth` o `sol`) |
 | `bias.py` | Validación del sesgo con funding, DVOL, OI, largos/cortos y HMM |
 | `vol_ensemble.py`, `volmodels.py`, `fetch_dvol.py` | Validación del ensamble de volatilidad (GARCH, HAR, DVOL) y modelo reutilizable |
+| `micro_collect.py`, `micro_rollup.py` | Captura de microestructura (libro, flujo, liquidaciones, base) |
 | `gex.py` | GEX actual desde la cadena de opciones de Deribit |
 | `journal.py` | Diario de predicciones y puntuación |
 | `export*.py` | Genera los datasets del dashboard publicado en Claude |

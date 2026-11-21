@@ -1,0 +1,17 @@
+# Servicio systemd para capturar microestructura de forma continua.
+# Instalar: copiar a /etc/systemd/system/, ajustar User y rutas, y ejecutar:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now micro-collector
+[Unit]
+Description=Trading-Predictor: capturador de microestructura
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Trading-Predictor
+ExecStart=/usr/bin/python3 src/micro_collect.py --inst BTC-USDT-SWAP --interval 60
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
