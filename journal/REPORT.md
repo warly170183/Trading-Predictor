@@ -10,6 +10,13 @@ Sesgo aplicado al cono: 0. Las lecturas son contexto y se validan aquí hacia ad
 | 24 h | 0 | — | — |
 | 72 h | 0 | — | — |
 
+Cono con ensamble GARCH+HAR (se guarda en paralelo para compararlo hacia adelante):
+
+| Horizonte | n | Dentro del 90 % (ensamble) |
+|---|---|---|
+| 24 h | 0 | — |
+| 72 h | 0 | — |
+
 Nominal: 50 % y 90 %. Con pocas predicciones la cobertura es ruido; las predicciones diarias consecutivas se solapan a 72 h.
 
 ## Retorno posterior según la lectura

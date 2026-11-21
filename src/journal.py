@@ -15,6 +15,7 @@ la hipótesis de continuación de funding y OI, sin sesgo retrospectivo."""
 import csv, datetime as dt, json, os, subprocess, sys
 import numpy as np
 from paths import DATA, JOURNAL, SRC
+from volmodels import ensemble_ratio
 
 HZ = (24, 72)
 QS = ("5", "10", "25", "50", "75", "90", "95")
@@ -54,6 +55,10 @@ def build_record():
         "fund": ("neg" if fz < -FUND_Z else "pos" if fz > FUND_Z else "none") if fz is not None else "na",
         "oi_flush": bool(now["oi_chg_1d"] < OI_FLUSH) if now.get("oi_chg_1d") is not None else None,
     }
+    h1 = np.array(json.load(open(f"{DATA}/btc_1h.json")))
+    ratio = ensemble_ratio(np.diff(np.log(h1[:, 4])), HZ)
+    spot = b["spot"]
+    cone_ens = {str(h): {q: round(spot * float(np.exp(ratio[h] * np.log(b["cone"][q][h] / spot))), 2) for q in QS} for h in HZ}
     return {
         "id": day,
         "anchor_ts": anchor,
@@ -68,6 +73,8 @@ def build_record():
         "flags": flags,
         "bias_applied_pct": 0.0,
         "cone": {str(h): {q: round(b["cone"][q][h], 2) for q in QS} for h in HZ},
+        "cone_ens": cone_ens,
+        "ens_ratio": {str(h): round(ratio[h], 4) for h in HZ},
         "p_up": {str(h): round(b["p_close_up"].get(f"up_{h}", float("nan")), 4) for h in HZ},
     }
 
@@ -100,12 +107,14 @@ def score(preds):
             if end not in c:
                 continue
             q = r["cone"][str(h)]
+            qe = r.get("cone_ens", {}).get(str(h))
             y = c[end]
             rows.append({
                 "id": r["id"], "h": h, "spot": r["spot"], "close": y,
                 "ret_pct": round((y / r["spot"] - 1) * 100, 3),
                 "in50": int(q["25"] <= y <= q["75"]), "in90": int(q["5"] <= y <= q["95"]),
-                "pit": round(pit(y, q), 3), "fund": r["flags"]["fund"], "oi_flush": r["flags"]["oi_flush"],
+                "pit": round(pit(y, q), 3),
+                "in90_ens": int(qe["5"] <= y <= qe["95"]) if qe else "", "fund": r["flags"]["fund"], "oi_flush": r["flags"]["oi_flush"],
                 "hmm": r["hmm"]["state"],
             })
     rows.sort(key=lambda x: (x["id"], x["h"]))
@@ -124,6 +133,10 @@ def report(preds, rows):
         r = [x for x in rows if x["h"] == h]
         n = len(r)
         L.append(f"| {h} h | {n} | " + (f"{100*np.mean([x['in50'] for x in r]):.0f} % | {100*np.mean([x['in90'] for x in r]):.0f} % |" if n else "— | — |"))
+    L += ["", "Cono con ensamble GARCH+HAR (se guarda en paralelo para compararlo hacia adelante):", "", "| Horizonte | n | Dentro del 90 % (ensamble) |", "|---|---|---|"]
+    for h in HZ:
+        r = [x for x in rows if x["h"] == h and x["in90_ens"] != ""]
+        L.append(f"| {h} h | {len(r)} | " + (f"{100*np.mean([x['in90_ens'] for x in r]):.0f} % |" if r else "— |"))
     L += ["", "Nominal: 50 % y 90 %. Con pocas predicciones la cobertura es ruido; las predicciones diarias consecutivas se solapan a 72 h.", ""]
     L += ["## Retorno posterior según la lectura", "", "| Lectura | Horizonte | n | Retorno medio | % de subidas |", "|---|---|---|---|---|"]
     groups = [("Funding muy negativo", lambda x: x["fund"] == "neg"), ("Funding muy positivo", lambda x: x["fund"] == "pos"),

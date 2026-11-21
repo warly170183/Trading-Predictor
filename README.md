@@ -8,6 +8,7 @@ Estado actual (BTC-USDT-SWAP, datos públicos de OKX y Deribit):
 - **Capa de operaciones**: rejilla de stop/objetivo con EV neto de costes, Kelly y acierto necesario.
 - **Sesgo direccional**: probado con precio/volumen (1H) y con funding, DVOL, OI, ratio largos/cortos y régimen HMM (diario). **Ninguna señal supera la validación**, así que la deriva del cono es 0.
 - **GEX de opciones**: instantánea de Deribit, sin historia para validarla. Solo contexto.
+- **Ensamble de volatilidad** (GARCH+HAR, `src/volmodels.py`): mejora pequeña pero consistente de la puntuación del cono en BTC, ETH y SOL a 72 h. Se guarda en paralelo en el diario y aún no sustituye al cono principal. Detalle en [RESULTS.md](RESULTS.md).
 - **Diario de predicciones** (`src/journal.py`): cada día guarda el cono y las lecturas, y puntúa lo vencido para validar hacia adelante.
 
 ## Uso
@@ -29,8 +30,9 @@ Los datos se guardan en `data/` (no versionado; cambia la ruta con `TP_DATA`). E
 | `fetch.py`, `fetch_derivs.py`, `fetch_funding.py` | Descarga velas (OKX) y derivados (OKX rubik, Deribit funding, DVOL y opciones) |
 | `engine.py` | Cono: GARCH, simulación, calibración walk-forward, régimen HMM |
 | `trades.py` | Operaciones largo/corto: rejilla stop/objetivo, EV, Kelly |
-| `signals.py` | Validación direccional con precio y volumen |
+| `signals.py` | Validación direccional con precio y volumen (`btc`, `eth` o `sol`) |
 | `bias.py` | Validación del sesgo con funding, DVOL, OI, largos/cortos y HMM |
+| `vol_ensemble.py`, `volmodels.py`, `fetch_dvol.py` | Validación del ensamble de volatilidad (GARCH, HAR, DVOL) y modelo reutilizable |
 | `gex.py` | GEX actual desde la cadena de opciones de Deribit |
 | `journal.py` | Diario de predicciones y puntuación |
 | `export*.py` | Genera los datasets del dashboard publicado en Claude |

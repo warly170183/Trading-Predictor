@@ -1,4 +1,4 @@
-"""Banco de pruebas direccional: ¿alguna señal mejora la probabilidad de que BTC suba/baje?
+"""Banco de pruebas direccional: ¿alguna señal mejora la probabilidad de que el activo suba/baje? Uso: python src/signals.py btc|eth|sol
 Walk-forward expansivo, etiquetas sin solape (paso = horizonte), purga de etiquetas,
 test por señal con bootstrap en bloques y corrección de Bonferroni."""
 from paths import DATA
@@ -13,7 +13,8 @@ warnings.filterwarnings("ignore")
 rng = np.random.default_rng(7)
 COST = 0.0010  # 0,10 % ida y vuelta (comisión taker 2x0,05 %, sin deslizamiento extra)
 
-a = np.array(json.load(open(f"{DATA}/btc_1h_long.json")))
+ASSET = sys.argv[1].lower() if len(sys.argv) > 1 else "btc"
+a = np.array(json.load(open(f"{DATA}/{ASSET}_1h_long.json")))
 df = pd.DataFrame(a, columns=["ts", "o", "h", "l", "c", "v"])
 df["t"] = pd.to_datetime(df.ts, unit="ms", utc=True)
 c = df.c
@@ -139,4 +140,4 @@ res["ic"] = ic_rows
 res["n_tests"] = ntests
 for r in ic_rows[:8]:
     print(f"IC h={r['h']:>2} {r['feature']:<12} {r['ic']:+.3f} p={r['p']:.3f} bonf={r['p_bonf']:.2f}")
-json.dump(res, open(f"{DATA}/signals_output.json", "w"))
+json.dump(res, open(f"{DATA}/signals_output.json" if ASSET == "btc" else f"{DATA}/signals_output_{ASSET}.json", "w"))
