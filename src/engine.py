@@ -171,8 +171,9 @@ def cone_block(ts, ohlc, H, step_ms, N, label, tail):
 
 
 if __name__ == "__main__":
-    h1 = load(f"{DATA}/btc_1h.json")
-    d1 = load(f"{DATA}/btc_1d.json")
+    ASSET = sys.argv[sys.argv.index("--asset") + 1].lower() if "--asset" in sys.argv else "btc"
+    h1 = load(f"{DATA}/{ASSET}_1h.json")
+    d1 = load(f"{DATA}/{ASSET}_1d.json")
     t0 = time.time()
     b1, _ = cone_block(h1[:, 0], h1, 72, 3600_000, 5000, "1H", 168)
     bd, _ = cone_block(d1[:, 0], d1, 30, 86400_000, 5000, "1D", 90)
@@ -182,12 +183,12 @@ if __name__ == "__main__":
     wf = walk_forward(h1[:, 4]) if "--nowf" not in sys.argv else {}
     out = {
         "generated": int(time.time() * 1000),
-        "inst": "BTC-USDT-SWAP",
+        "inst": f"{ASSET.upper()}-USDT-SWAP",
         "n_hours": int(len(h1)),
         "n_days": int(len(d1)),
         "regime": {"current": cur, "probs": probs},
         "h1": b1, "d1": bd, "walk_forward": wf,
         "wf_cfg": {"window": 2500, "step": 12, "sims": 2000},
     }
-    json.dump(out, open(f"{DATA}/cone_output.json", "w"))
+    json.dump(out, open(f"{DATA}/cone_output.json" if ASSET == "btc" else f"{DATA}/cone_output_{ASSET}.json", "w"))
     print("done", f"{time.time()-t0:.0f}s")
