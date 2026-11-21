@@ -63,8 +63,9 @@ def fwd(mid, h):
     return np.log(mid.shift(-h) / mid)
 
 
-def study(df, cost=0.0010):
-    F, mid = features(df)
+def study(df, cost=0.0010, builder=None, hz=None):
+    HZ = hz or globals()["HZ"]
+    F, mid = (builder or features)(df)
     names = list(F.columns)
     ntests = len(names) * len(HZ)
     res = {"n_rows": int(len(df)), "from": str(F.index[0]), "to": str(F.index[-1]), "n_tests": ntests, "cost": cost, "ic": [], "wf": {}}
@@ -85,9 +86,10 @@ def study(df, cost=0.0010):
             continue
         P, Y, R = [], [], []
         start = int(len(sel) * 0.4)
-        for k in range(start, len(sel), 20):
+        B = max(20, len(sel) // 60)
+        for k in range(start, len(sel), B):
             tr = sel[:k]  # las etiquetas de entrenamiento terminan antes del primer origen del bloque (paso = horizonte)
-            blk = sel[k:k + 20]
+            blk = sel[k:k + B]
             if len(tr) < 300:
                 continue
             X, yy = F.values[tr], (y.values[tr] > 0).astype(int)

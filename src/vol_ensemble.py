@@ -7,6 +7,7 @@ import json, sys, time, warnings
 import numpy as np
 from paths import DATA
 from engine import fit_garch
+import evaluation as ev
 
 warnings.filterwarnings("ignore")
 asset = sys.argv[1].lower()
@@ -144,11 +145,14 @@ for h in HZ:
         if ok.sum() < 60:
             continue
         blk = max(3, 2 * int(np.ceil(h / STEP)))
+        hdm = int(np.ceil(h / STEP))  # solape de las etiquetas entre orígenes consecutivos
         rows = {}
         for m in models:
             d = (L["garch"][ok] - L[m][ok])
             rows[m] = {"pinball": float(L[m][ok].mean()), "mejora_vs_garch_pct": float(100 * d.mean() / L["garch"][ok].mean()),
                        "ic95_mejora_pct": [100 * v / float(L["garch"][ok].mean()) for v in blockci(d, blk)] if m != "garch" else None,
+                       "dm_p": ev.diebold_mariano(L["garch"][ok], L[m][ok], h=hdm)[1] if m != "garch" else None,
+                       "kupiec90_p": ev.kupiec_pof(1 - cov[m][ok][:, 1], 0.10)[1], "christ_ind90_p": ev.christoffersen_ind(1 - cov[m][ok][:, 1])[1],
                        "cob50": float(cov[m][ok][:, 0].mean() * 100), "cob90": float(cov[m][ok][:, 1].mean() * 100), "winkler90": float(wk[m][ok].mean())}
         res_h[samp] = {"n": int(ok.sum()), "modelos": rows}
     out["results"][str(h)] = res_h
@@ -156,5 +160,7 @@ for h in HZ:
         print(f"\n{asset.upper()} {h} h · muestra {samp} (n={v['n']})")
         for m, r in v["modelos"].items():
             ic = r["ic95_mejora_pct"]
-            print(f"  {m:8s} pinball {r['pinball']:.4f} · vs GARCH {r['mejora_vs_garch_pct']:+.2f} %" + (f" [{ic[0]:+.1f},{ic[1]:+.1f}]" if ic else "") + f" · cob 50/90 {r['cob50']:.0f}/{r['cob90']:.0f} · Winkler {r['winkler90']:.2f}")
+            print(f"  {m:8s} pinball {r['pinball']:.4f} · vs GARCH {r['mejora_vs_garch_pct']:+.2f} %" + (f" [{ic[0]:+.1f},{ic[1]:+.1f}]" if ic else "") + (f" · DM p={r['dm_p']:.3f}" if r['dm_p'] is not None else "") + f" · Kupiec90 p={r['kupiec90_p']:.2f} · Christoffersen p={r['christ_ind90_p']:.2f}" + f" · cob 50/90 {r['cob50']:.0f}/{r['cob90']:.0f} · Winkler {r['winkler90']:.2f}")
 json.dump(out, open(f"{DATA}/vol_ens_{asset}.json", "w"))
+np.savez(f"{DATA}/vol_sig_{asset}.npz", origins=oi, **{f"ret{h}": ret[h] for h in HZ},
+         **{f"sig{h}_{m}": sig[h][m] for h in HZ for m in M})

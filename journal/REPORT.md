@@ -20,6 +20,13 @@ Cono con ensamble GARCH+HAR (se guarda en paralelo para compararlo hacia adelant
 | 24 h | 0 | — |
 | 72 h | 0 | — |
 
+Cono implícito de opciones (SVI + Breeden-Litzenberger, medida neutral al riesgo):
+
+| Horizonte | n | Dentro del 90 % (opciones) |
+|---|---|---|
+| 24 h | 0 | — |
+| 72 h | 0 | — |
+
 Nominal: 50 % y 90 %. Con pocas predicciones la cobertura es ruido; las predicciones diarias consecutivas se solapan a 72 h.
 
 ### Retorno posterior según la lectura
@@ -52,6 +59,13 @@ Predicciones guardadas: **1**. Puntuadas (vencidas): **0**.
 Cono con ensamble GARCH+HAR (se guarda en paralelo para compararlo hacia adelante):
 
 | Horizonte | n | Dentro del 90 % (ensamble) |
+|---|---|---|
+| 24 h | 0 | — |
+| 72 h | 0 | — |
+
+Cono implícito de opciones (SVI + Breeden-Litzenberger, medida neutral al riesgo):
+
+| Horizonte | n | Dentro del 90 % (opciones) |
 |---|---|---|
 | 24 h | 0 | — |
 | 72 h | 0 | — |

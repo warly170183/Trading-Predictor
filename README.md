@@ -55,6 +55,14 @@ Tiene que correr en una máquina siempre encendida: `deploy/micro-collector.serv
 
 Orden manual completo: `fetch.py` → `fetch_derivs.py` → `engine.py` → `signals.py` → `trades.py` → `bias.py` → `gex.py` → `export*.py`. Los argumentos de `fetch.py` son `instrumento barra n salida`, como en `journal.py`.
 
+## Estudios de validación
+- `python src/binance_vision.py --symbols BTCUSDT,ETHUSDT --months 24` y `python src/hist_study.py BTCUSDT`: intradía con 2 años de histórico público de Binance.
+- `src/evaluation.py`: CRPS, Diebold-Mariano, Kupiec, Christoffersen, PSR/DSR (`python tests/test_evaluation.py`).
+- `python src/conformal_eval.py btc` (tras `vol_ensemble.py`): conformal adaptativo frente a calibración estática.
+- `python src/options_cone.py btc|eth`: cono implícito de opciones; se guarda en el diario como `cone_opt`.
+- `python src/rotation.py --fetch`: rotación entre 40 monedas con protocolo preregistrado.
+Resultados en `RESULTS.md`.
+
 ## Límites
 
 - Los resultados de validación son de una muestra de ~3 años de BTC; no garantizan nada hacia adelante.
