@@ -1,0 +1,29 @@
+name: Diario de predicciones
+
+on:
+  schedule:
+    - cron: "20 0 * * *"   # cada día a las 00:20 UTC, tras el cierre de la vela diaria
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  journal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python src/journal.py run
+      - name: Guardar el diario
+        run: |
+          git config user.name "trading-predictor-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add journal
+          git diff --cached --quiet || git commit -m "Diario: $(date -u +%F)"
+          git push
