@@ -4,7 +4,7 @@ Sesgo aplicado al cono: 0. Las lecturas son contexto y se validan aquí hacia ad
 
 ## BTC
 
-Predicciones guardadas: **1**. Puntuadas (vencidas): **0**.
+Predicciones guardadas: **2**. Puntuadas (vencidas): **0**.
 
 ### Cobertura del cono
 
@@ -47,7 +47,7 @@ No se saca ninguna conclusión con menos de 30 eventos independientes por fila.
 
 ## ETH
 
-Predicciones guardadas: **1**. Puntuadas (vencidas): **0**.
+Predicciones guardadas: **2**. Puntuadas (vencidas): **0**.
 
 ### Cobertura del cono
 
@@ -90,7 +90,7 @@ No se saca ninguna conclusión con menos de 30 eventos independientes por fila.
 
 ## SOL
 
-Predicciones guardadas: **1**. Puntuadas (vencidas): **0**.
+Predicciones guardadas: **2**. Puntuadas (vencidas): **0**.
 
 ### Cobertura del cono
 
