@@ -1,0 +1,3 @@
+asset,id,h,spot,close,ret_pct,in50,in90,pit,in90_ens,in90_opt,fund,oi_flush,hmm
+sol,2026-11-21,24,70.76,70.37,-0.551,1,1,0.468,1,,none,False,
+sol,2026-11-22,24,69.14,71.97,4.093,0,1,0.93,1,,none,False,
